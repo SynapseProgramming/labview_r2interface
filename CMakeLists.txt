@@ -20,10 +20,15 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/Lvodom.msg"
   "msg/Laserarray.msg"
  )
 
@@ -33,6 +38,10 @@ add_executable(laserscan_convert src/laserscan_convert.cpp)
 ament_target_dependencies(laserscan_convert rclcpp std_msgs sensor_msgs)
 rosidl_target_interfaces(laserscan_convert ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
+
+add_executable(odom_convert src/odom_convert.cpp)
+ament_target_dependencies(odom_convert rclcpp nav_msgs sensor_msgs tf2 tf2_ros)
+rosidl_target_interfaces(odom_convert ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 
 if(BUILD_TESTING)
@@ -51,6 +60,7 @@ endif()
 #key in name here, for ro2 to find the executable
 install(TARGETS
   laserscan_convert
+  odom_convert
 
 
   DESTINATION lib/${PROJECT_NAME})
