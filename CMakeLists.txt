@@ -58,11 +58,18 @@ endif()
 
 
 #key in name here, for ro2 to find the executable
-install(TARGETS
+install(
+  TARGETS
   laserscan_convert
   odom_convert
 
-
   DESTINATION lib/${PROJECT_NAME})
+  
+install(
+  DIRECTORY
+  launch
+  
+  DESTINATION share/${PROJECT_NAME})
+
 
 ament_package()
