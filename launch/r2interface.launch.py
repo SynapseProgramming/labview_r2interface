@@ -7,11 +7,5 @@ def generate_launch_description():
             package='labview_r2interface',
             executable='odom_convert',
             name='odom_convert'
-        ),
-        Node(
-            package='labview_r2interface',
-            executable='laserscan_convert',
-            name='laserscan_convert'
         )
-
         ])

@@ -29,15 +29,9 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Lvodom.msg"
-  "msg/Laserarray.msg"
  )
 
 #add executables
-
-add_executable(laserscan_convert src/laserscan_convert.cpp)
-ament_target_dependencies(laserscan_convert rclcpp std_msgs sensor_msgs)
-rosidl_target_interfaces(laserscan_convert ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
 
 add_executable(odom_convert src/odom_convert.cpp)
 ament_target_dependencies(odom_convert rclcpp nav_msgs sensor_msgs tf2 tf2_ros)
@@ -57,12 +51,10 @@ endif()
 
 
 
-#key in name here, for ro2 to find the executable
+#key in name here, for ros2 to find the executable
 install(
   TARGETS
-  laserscan_convert
   odom_convert
-
   DESTINATION lib/${PROJECT_NAME})
   
 install(
