@@ -43,8 +43,6 @@ public:
 
       odom_message.twist.twist.linear.x = msg->bot_linear / 1000.0;
       odom_message.twist.twist.angular.z = msg->bot_angular * (PI / 180.0);
-      odom_message.child_frame_id = "base_footprint";
-      odom_message.header.frame_id = "odom";
 
       transformStamped.transform.translation.x = msg->bot_x / 1000.0;
       transformStamped.transform.translation.y = msg->bot_y / 1000.0;
@@ -61,15 +59,16 @@ public:
     timer_ = this->create_wall_timer(
         10ms, [this]()
         {
+          rclcpp::Time current_time = this->get_clock()->now();
 
-      rclcpp::Time current_time = this->get_clock()->now();
+          odom_message.header.stamp = current_time;
+          transformStamped.header.stamp = current_time;
 
-      odom_message.header.stamp = current_time;
-      transformStamped.header.stamp = current_time;
+          transformStamped.header.frame_id = "odom";
+          transformStamped.child_frame_id = "base_footprint";
 
-      
-      transformStamped.header.frame_id = "odom";
-      transformStamped.child_frame_id = "base_footprint";
+          odom_message.header.frame_id = "odom";
+          odom_message.child_frame_id = "base_footprint";
 
           publisher_->publish(odom_message);
           tbr->sendTransform(transformStamped); });
