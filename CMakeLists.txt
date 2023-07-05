@@ -38,7 +38,7 @@ ament_target_dependencies(odom_convert rclcpp nav_msgs sensor_msgs tf2 tf2_ros)
 rosidl_target_interfaces(odom_convert ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 add_executable(laser_filter src/laser_filter.cpp)
-ament_target_dependencies(laser_filter rclcpp nav_msgs sensor_msgs tf2 tf2_ros)
+ament_target_dependencies(laser_filter rclcpp nav_msgs sensor_msgs)
 rosidl_target_interfaces(laser_filter ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 
