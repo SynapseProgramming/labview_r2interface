@@ -31,15 +31,20 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Lvodom.msg"
  )
 
+
+# link against interface
+rosidl_get_typesupport_target(cpp_typesupport_target
+  ${PROJECT_NAME} rosidl_typesupport_cpp)
+
 #add executables
 
 add_executable(odom_convert src/odom_convert.cpp)
 ament_target_dependencies(odom_convert rclcpp nav_msgs sensor_msgs tf2 tf2_ros)
-rosidl_target_interfaces(odom_convert ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(odom_convert "${cpp_typesupport_target}")
 
 add_executable(laser_filter src/laser_filter.cpp)
 ament_target_dependencies(laser_filter rclcpp nav_msgs sensor_msgs)
-rosidl_target_interfaces(laser_filter ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(laser_filter "${cpp_typesupport_target}")
 
 
 if(BUILD_TESTING)
