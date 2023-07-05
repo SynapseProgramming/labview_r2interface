@@ -15,43 +15,26 @@ public:
           best_effort(rclcpp::KeepLast(10))
     {
 
-
         RCLCPP_INFO(this->get_logger(), "laser filter started!\n");
         auto laser_callback = [this](const sensor_msgs::msg::LaserScan::SharedPtr msg)
         {
-            
-         sensor_msgs::msg::LaserScan laserscan_message = *msg;
+            sensor_msgs::msg::LaserScan laserscan_message = *msg;
 
-            // laserscan_message.header.frame_id = msg->header.frame_id;
             laserscan_message.header.stamp = rclcpp::Clock().now();
-
-            // laserscan_message.angle_min = msg->angle_min;
-            // laserscan_message.angle_max = msg->angle_max;
-
-            // laserscan_message.angle_increment = msg->angle_increment;
             laserscan_message.time_increment = 0.0;
             laserscan_message.scan_time = 0.0;
-
-            // laserscan_message.range_min = msg->range_min;
-            // laserscan_message.range_max = msg->range_max;
-
-            // laserscan_message.ranges = msg->ranges;
-            // laserscan_message.intensities = msg->intensities;
-
 
             publisher_->publish(laserscan_message);
         };
 
         publisher_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
         subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("scan_unfiltered", best_effort.reliability(be), laser_callback);
-
     }
 
 private:
-
     rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr publisher_;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
-    
+
     rclcpp::QoS best_effort;
 };
 
