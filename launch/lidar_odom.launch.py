@@ -27,6 +27,7 @@ def generate_launch_description():
         name="laser_filter",
         parameters=[
             {"max_range": 69.0},
+            {"max_range_difference": 3333.0},
         ],
     )
 
