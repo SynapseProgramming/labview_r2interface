@@ -22,11 +22,16 @@ def generate_launch_description():
     )
 
     laser_converter = Node(
-        package="labview_r2interface", executable="laser_filter", name="laser_filter"
+        package="labview_r2interface",
+        executable="laser_filter",
+        name="laser_filter",
+        parameters=[
+            {"max_range": 69.0},
+        ],
     )
 
     ld = LaunchDescription()
     ld.add_action(odom_converter)
-    ld.add_action(lidar_launch)
+    # ld.add_action(lidar_launch)
     ld.add_action(laser_converter)
     return ld

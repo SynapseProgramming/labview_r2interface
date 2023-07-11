@@ -1,5 +1,6 @@
 #include <chrono>
 #include <memory>
+#include <iostream>
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 
@@ -16,6 +17,12 @@ public:
     {
 
         RCLCPP_INFO(this->get_logger(), "laser filter started!\n");
+        // get parameters
+        this->declare_parameter("max_range", rclcpp::PARAMETER_DOUBLE);
+        this->get_parameter_or("max_range", max_range, 2.0);
+
+        RCLCPP_INFO(this->get_logger(), "The max range is: %f", max_range);
+
         auto laser_callback = [this](const sensor_msgs::msg::LaserScan::SharedPtr msg)
         {
             sensor_msgs::msg::LaserScan unfiltered_laserscan_message = *msg;
@@ -98,13 +105,10 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr filteredpub_;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
 
-
-
     // TODO: parameterize these values
 
-
     // only datapoints with distances smaller than this range are taken into account (m)
-    double max_range = 2.0;
+    double max_range = 0.0;
     // maximum distance between two consecutive points (m)
     double max_range_difference = 0.04;
     // maximum number of neighbour points to consider
