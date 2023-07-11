@@ -24,15 +24,15 @@ public:
             laserscan_message.time_increment = 0.0;
             laserscan_message.scan_time = 0.0;
 
-            publisher_->publish(laserscan_message);
+            unfilteredpub_->publish(laserscan_message);
         };
 
-        publisher_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
+        unfilteredpub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
         subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("scan_unfiltered", best_effort.reliability(be), laser_callback);
     }
 
 private:
-    rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr publisher_;
+    rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr unfilteredpub_;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
 
     rclcpp::QoS best_effort;
