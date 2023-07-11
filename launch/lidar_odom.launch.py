@@ -28,6 +28,7 @@ def generate_launch_description():
         parameters=[
             {"max_range": 69.0},
             {"max_range_difference": 3333.0},
+            {"filter_window": 34},
         ],
     )
 

@@ -22,9 +22,12 @@ public:
         this->get_parameter_or("max_range", max_range, 2.0);
         this->declare_parameter("max_range_difference", rclcpp::PARAMETER_DOUBLE);
         this->get_parameter_or("max_range_difference", max_range_difference, 0.04);
+        this->declare_parameter("filter_window", rclcpp::PARAMETER_INTEGER);
+        this->get_parameter_or("filter_window", filter_window, (unsigned int)2);
 
         RCLCPP_INFO(this->get_logger(), "The max range is: %f", max_range);
         RCLCPP_INFO(this->get_logger(), "The max range diff: %f", max_range_difference);
+        RCLCPP_INFO(this->get_logger(), "The max range diff: %d", filter_window);
 
         auto laser_callback = [this](const sensor_msgs::msg::LaserScan::SharedPtr msg)
         {
