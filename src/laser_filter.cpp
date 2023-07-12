@@ -25,10 +25,6 @@ public:
         this->declare_parameter("filter_window", rclcpp::PARAMETER_INTEGER);
         this->get_parameter_or("filter_window", filter_window, (unsigned int)2);
 
-        RCLCPP_INFO(this->get_logger(), "The max range is: %f", max_range);
-        RCLCPP_INFO(this->get_logger(), "The max range diff: %f", max_range_difference);
-        RCLCPP_INFO(this->get_logger(), "The max range diff: %d", filter_window);
-
         auto laser_callback = [this](const sensor_msgs::msg::LaserScan::SharedPtr msg)
         {
             sensor_msgs::msg::LaserScan unfiltered_laserscan_message = *msg;
@@ -118,7 +114,7 @@ private:
     // maximum distance between two consecutive points (m)
     double max_range_difference = 0.0;
     // maximum number of neighbour points to consider
-    unsigned int filter_window = 2;
+    unsigned int filter_window = 0;
 
     rclcpp::QoS best_effort;
 };
