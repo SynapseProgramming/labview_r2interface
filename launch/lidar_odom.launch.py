@@ -42,6 +42,6 @@ def generate_launch_description():
 
     ld = LaunchDescription()
     ld.add_action(odom_converter)
-    # ld.add_action(lidar_launch)
+    ld.add_action(lidar_launch)
     ld.add_action(laser_converter)
     return ld

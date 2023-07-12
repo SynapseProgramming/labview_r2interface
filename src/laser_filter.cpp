@@ -30,14 +30,16 @@ public:
             sensor_msgs::msg::LaserScan unfiltered_laserscan_message = *msg;
             sensor_msgs::msg::LaserScan filtered_laserscan_message = *msg;
 
+            auto time_now = rclcpp::Clock().now();
+
             // unfiltered message properties
-            unfiltered_laserscan_message.header.stamp = rclcpp::Clock().now();
+            unfiltered_laserscan_message.header.stamp = time_now;
             unfiltered_laserscan_message.time_increment = 0.0;
             unfiltered_laserscan_message.scan_time = 0.0;
 
             // filtered scan properties
 
-            filtered_laserscan_message.header.stamp = rclcpp::Clock().now();
+            filtered_laserscan_message.header.stamp = time_now;
             filtered_laserscan_message.time_increment = 0.0;
             filtered_laserscan_message.scan_time = 0.0;
             std::vector<bool> valid_ranges(filtered_laserscan_message.ranges.size(), false);
@@ -73,9 +75,9 @@ public:
         };
 
         // TODO: change the topic names
-        unfilteredpub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
-        filteredpub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan_filtered", 10);
-        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("scan_unfiltered", best_effort.reliability(be), laser_callback);
+        unfilteredpub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan_unfiltered", 10);
+        filteredpub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
+        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("raw_laser", best_effort.reliability(be), laser_callback);
     }
 
     bool
@@ -106,8 +108,6 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr unfilteredpub_;
     rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr filteredpub_;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
-
-    // TODO: parameterize these values
 
     // only datapoints with distances smaller than this range are taken into account (m)
     double max_range = 0.0;
