@@ -21,8 +21,23 @@ def generate_launch_description():
         package="labview_r2interface", executable="odom_convert", name="odom_convert"
     )
 
+    # max_range:  only datapoints with distances smaller
+    # than this range are taken into account (m)
+
+    # max_range_difference: the maximum difference in distance between two
+    # consecutive points (m)
+
+    # filter_window: maximum number of neighbouring points to compare to
+
     laser_converter = Node(
-        package="labview_r2interface", executable="laser_filter", name="laser_filter"
+        package="labview_r2interface",
+        executable="laser_filter",
+        name="laser_filter",
+        parameters=[
+            {"max_range": 2.0},
+            {"max_range_difference": 0.04},
+            {"filter_window": 2},
+        ],
     )
 
     ld = LaunchDescription()
