@@ -74,7 +74,6 @@ public:
             filteredpub_->publish(filtered_laserscan_message);
         };
 
-        // TODO: change the topic names
         unfilteredpub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan_unfiltered", 10);
         filteredpub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
         subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>("raw_laser", best_effort.reliability(be), laser_callback);
