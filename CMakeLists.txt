@@ -42,6 +42,10 @@ add_executable(odom_convert src/odom_convert.cpp)
 ament_target_dependencies(odom_convert rclcpp nav_msgs sensor_msgs tf2 tf2_ros)
 target_link_libraries(odom_convert "${cpp_typesupport_target}")
 
+add_executable(unfiltered_odom_convert src/unfiltered_odom_convert.cpp)
+ament_target_dependencies(unfiltered_odom_convert rclcpp nav_msgs sensor_msgs tf2 tf2_ros)
+target_link_libraries(unfiltered_odom_convert "${cpp_typesupport_target}")
+
 add_executable(laser_filter src/laser_filter.cpp)
 ament_target_dependencies(laser_filter rclcpp nav_msgs sensor_msgs)
 target_link_libraries(laser_filter "${cpp_typesupport_target}")
@@ -64,6 +68,7 @@ endif()
 install(
   TARGETS
   odom_convert
+  unfiltered_odom_convert
   laser_filter
   DESTINATION lib/${PROJECT_NAME})
   
