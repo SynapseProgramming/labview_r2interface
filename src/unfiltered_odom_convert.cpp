@@ -30,7 +30,7 @@ public:
     cov[14] = 1e5;
     cov[21] = 1e5;
     cov[28] = 1e5;
-    cov[35] = 0.001;
+    cov[35] = 0.1;
 
     odom_message.pose.covariance = cov;
     odom_message.twist.covariance = cov;
