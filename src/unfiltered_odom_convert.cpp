@@ -3,6 +3,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "labview_r2interface/msg/lvodom.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "sensor_msgs/msg/imu.hpp"
 #include <iostream>
 #include <tf2/LinearMath/Quaternion.h>
 
@@ -35,6 +36,13 @@ public:
     odom_message.pose.covariance = cov;
     odom_message.twist.covariance = cov;
 
+    curr_time = this->get_clock()->now();
+
+    auto time_callback = [this](const sensor_msgs::msg::Imu::SharedPtr msg)
+    {
+      curr_time = msg->header.stamp;
+    };
+    
     auto odom_callback = [this](const labview_r2interface::msg::Lvodom::SharedPtr msg)
     {
       odom_message.pose.pose.position.x = msg->bot_x / 1000.0;
@@ -56,13 +64,14 @@ public:
 
     publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("odom_unfiltered", 10);
     subscription_ = this->create_subscription<labview_r2interface::msg::Lvodom>("bot_odom", best_effort.reliability(be), odom_callback);
+    timesub = this->create_subscription<sensor_msgs::msg::Imu>("/camera/imu", best_effort.reliability(be), time_callback);
 
     timer_ = this->create_wall_timer(
         10ms, [this]()
         {
-      rclcpp::Time current_time = this->get_clock()->now();
+      // rclcpp::Time current_time = this->get_clock()->now();
 
-      odom_message.header.stamp = current_time;
+      odom_message.header.stamp = curr_time;
  
 
       publisher_->publish(odom_message); });
@@ -74,6 +83,8 @@ private:
   std::array<double, 36> cov;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr publisher_;
   rclcpp::Subscription<labview_r2interface::msg::Lvodom>::SharedPtr subscription_;
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr timesub;
+  rclcpp::Time curr_time;
   rclcpp::QoS best_effort;
   rclcpp::TimerBase::SharedPtr timer_;
 };
