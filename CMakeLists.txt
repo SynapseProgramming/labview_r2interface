@@ -50,6 +50,10 @@ add_executable(laser_filter src/laser_filter.cpp)
 ament_target_dependencies(laser_filter rclcpp nav_msgs sensor_msgs)
 target_link_libraries(laser_filter "${cpp_typesupport_target}")
 
+add_executable(imu_cov src/imu_cov.cpp)
+ament_target_dependencies(imu_cov rclcpp nav_msgs sensor_msgs)
+target_link_libraries(imu_cov "${cpp_typesupport_target}")
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -68,6 +72,7 @@ endif()
 install(
   TARGETS
   odom_convert
+  imu_cov
   unfiltered_odom_convert
   laser_filter
   DESTINATION lib/${PROJECT_NAME})
