@@ -26,9 +26,9 @@ public:
 
     // define covariance matrix
     // x variance
-    cov[0] = 0.001;
+    cov[0] = 0.1;
     // y variance
-    cov[7] = 0.001;
+    cov[7] = 1e-9;
     // z variance
     cov[14] = 1e5;
     // rx variance
@@ -36,7 +36,7 @@ public:
     // ry variance
     cov[28] = 1e5;
     // rz variance
-    cov[35] = 0.1;
+    cov[35] = 20.0;
 
     odom_message.pose.covariance = cov;
     odom_message.twist.covariance = cov;
