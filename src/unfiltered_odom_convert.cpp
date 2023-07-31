@@ -25,11 +25,17 @@ public:
     odom_message.child_frame_id = "base_footprint";
 
     // define covariance matrix
-    cov[0] = 1e-5;
-    cov[7] = 1e-5;
+    // x variance
+    cov[0] = 0.001;
+    // y variance
+    cov[7] = 0.001;
+    // z variance
     cov[14] = 1e5;
+    // rx variance
     cov[21] = 1e5;
+    // ry variance
     cov[28] = 1e5;
+    // rz variance
     cov[35] = 0.1;
 
     odom_message.pose.covariance = cov;
