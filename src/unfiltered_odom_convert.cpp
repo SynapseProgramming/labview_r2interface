@@ -24,6 +24,23 @@ public:
     odom_message.header.frame_id = "odom";
     odom_message.child_frame_id = "base_footprint";
 
+    // define covariance matrix
+    // x variance
+    cov[0] = 0.001;
+    // y variance
+    cov[7] = 0.001;
+    // z variance
+    cov[14] = 1e5;
+    // rx variance
+    cov[21] = 1e5;
+    // ry variance
+    cov[28] = 1e5;
+    // rz variance
+    cov[35] = 0.1;
+
+    odom_message.pose.covariance = cov;
+    odom_message.twist.covariance = cov;
+
     auto odom_callback = [this](const labview_r2interface::msg::Lvodom::SharedPtr msg)
     {
       odom_message.pose.pose.position.x = msg->bot_x / 1000.0;
@@ -60,6 +77,7 @@ public:
 private:
   nav_msgs::msg::Odometry odom_message;
 
+  std::array<double, 36> cov;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr publisher_;
   rclcpp::Subscription<labview_r2interface::msg::Lvodom>::SharedPtr subscription_;
   rclcpp::QoS best_effort;

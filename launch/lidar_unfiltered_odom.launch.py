@@ -23,6 +23,12 @@ def generate_launch_description():
         name="unfiltered_odom_convert",
     )
 
+    imu_converter = Node(
+        package="labview_r2interface",
+        executable="imu_cov",
+        name="imu_cov",
+    )
+
     # max_range:  only datapoints with distances smaller
     # than this range are taken into account (m)
 
@@ -45,5 +51,6 @@ def generate_launch_description():
     ld = LaunchDescription()
     ld.add_action(unfiltered_odom_converter)
     ld.add_action(lidar_launch)
+    ld.add_action(imu_converter)
     ld.add_action(laser_converter)
     return ld
