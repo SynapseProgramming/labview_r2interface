@@ -19,11 +19,11 @@ public:
 
     // define covariance matrix
     // x  variance
-    cov[0] = 0.01;
+    cov[0] = 0.1;
     // y variance
-    cov[4] = 0.01;
+    cov[4] = 0.1;
     // z variance
-    cov[8] = 0.01;
+    cov[8] = 0.1;
 
     auto imu_callback = [this](const sensor_msgs::msg::Imu::SharedPtr msg)
     {
@@ -33,6 +33,8 @@ public:
 
       imu_message.header.stamp = current_time;
       imu_message.orientation_covariance = cov;
+      imu_message.angular_velocity_covariance = cov;
+      imu_message.linear_acceleration_covariance = cov;
 
       publisher_->publish(imu_message);
     };
