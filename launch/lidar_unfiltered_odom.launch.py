@@ -9,13 +9,13 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     # this function gets the absolute shared path of the package
-    sick_scan = get_package_share_directory("sick_scan2")
+    # sick_scan = get_package_share_directory("sick_scan2")
 
-    lidar_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(sick_scan, "launch", "sick_tim_5xx.launch.py")
-        )
-    )
+    # lidar_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         os.path.join(sick_scan, "launch", "sick_tim_5xx.launch.py")
+    #     )
+    # )
 
     unfiltered_odom_converter = Node(
         package="labview_r2interface",
@@ -50,7 +50,7 @@ def generate_launch_description():
 
     ld = LaunchDescription()
     ld.add_action(unfiltered_odom_converter)
-    ld.add_action(lidar_launch)
+    # ld.add_action(lidar_launch)
     ld.add_action(imu_converter)
     ld.add_action(laser_converter)
     return ld
