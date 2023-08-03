@@ -19,10 +19,10 @@ public:
         : Node("pose_reset"),
           best_effort(rclcpp::KeepLast(10))
     {
-        // tbr = std::make_shared<tf2_ros::TransformBroadcaster>(this);
-        // RCLCPP_INFO(this->get_logger(), "pose_reset started!\n");
+        RCLCPP_INFO(this->get_logger(), "pose_reset started!\n");
 
         ismoving = false;
+        fired = false;
         auto cmdvel_callback = [this](const geometry_msgs::msg::Twist::SharedPtr msg)
         {
             if (msg->linear.x == 0 && msg->angular.z == 0)
@@ -36,12 +36,29 @@ public:
 
         timer_ = this->create_wall_timer(
             100ms, [this]()
-            { std::cout << ismoving << "\n"; });
+            {
+                std::cout << ismoving << "\n";
+                if (ismoving)
+                {   fired = false;
+                    this->one_off_timer->cancel();
+                }else {
+                    if(fired==false){
+                    this->one_off_timer->reset();
+                    fired= true;
+                    }
+                } });
+
+        one_off_timer = this->create_wall_timer(1s, [this]()
+                                                {
+      printf("in one_off_timer callback\n");
+      this->one_off_timer->reset(); });
+        // cancel to prevent running at the start
+        one_off_timer->cancel();
     };
 
 private:
     // geometry_msgs::msg::TransformStamped transformStamped;
-    bool ismoving;
+    bool ismoving, fired;
 
     // rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr publisher_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
@@ -49,6 +66,7 @@ private:
     rclcpp::QoS best_effort;
     // std::shared_ptr<tf2_ros::TransformBroadcaster> tbr;
     rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::TimerBase::SharedPtr one_off_timer;
 };
 
 int main(int argc, char *argv[])
