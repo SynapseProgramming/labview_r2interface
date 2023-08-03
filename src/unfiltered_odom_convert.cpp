@@ -26,7 +26,7 @@ public:
 
     // define covariance matrix
     // x variance
-    cov[0] = 0.1;
+    cov[0] = 0.2;
     // y variance
     cov[7] = 1e-9;
     // z variance
