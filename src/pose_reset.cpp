@@ -4,12 +4,14 @@
 #include <iostream>
 #include <tf2/LinearMath/Quaternion.h>
 
-#include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+
+#include "tf2_ros/transform_listener.h"
+#include "tf2_ros/buffer.h"
 
 #define be RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
-#define PI 3.141592653589793238
 using namespace std::chrono_literals;
 
 class pose_reset : public rclcpp::Node
@@ -20,6 +22,11 @@ public:
           best_effort(rclcpp::KeepLast(10))
     {
         RCLCPP_INFO(this->get_logger(), "pose_reset started!\n");
+
+        tf_buffer_ =
+            std::make_unique<tf2_ros::Buffer>(this->get_clock());
+        tf_listener_ =
+            std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
         ismoving = false;
         fired = false;
@@ -51,22 +58,44 @@ public:
         one_off_timer = this->create_wall_timer(1s, [this]()
                                                 {
       printf("in one_off_timer callback\n");
+
+      // get the robots current position in space
+      try {
+          transformStamped = tf_buffer_->lookupTransform(
+            toFrameRel, fromFrameRel,
+            tf2::TimePointZero);
+        } catch (const tf2::TransformException & ex) {
+          RCLCPP_INFO(
+            this->get_logger(), "Could not transform %s to %s: %s",
+            toFrameRel.c_str(), fromFrameRel.c_str(), ex.what());
+          return;
+        }
+        std::cout<<transformStamped.transform.translation.x<<"\n";
+        std::cout<<transformStamped.transform.translation.y<<"\n";
+      
+
+
       this->one_off_timer->reset(); });
         // cancel to prevent running at the start
         one_off_timer->cancel();
     };
 
 private:
-    // geometry_msgs::msg::TransformStamped transformStamped;
+    geometry_msgs::msg::TransformStamped transformStamped;
     bool ismoving, fired;
 
-    // rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr publisher_;
+    // rclcpp::Publisher<>::SharedPtr publisher_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
 
+    std::string toFrameRel = "base_footprint";
+    std::string fromFrameRel = "map";
+
     rclcpp::QoS best_effort;
-    // std::shared_ptr<tf2_ros::TransformBroadcaster> tbr;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::TimerBase::SharedPtr one_off_timer;
+
+    std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
 };
 
 int main(int argc, char *argv[])
