@@ -22,44 +22,30 @@ public:
         // tbr = std::make_shared<tf2_ros::TransformBroadcaster>(this);
         // RCLCPP_INFO(this->get_logger(), "pose_reset started!\n");
 
+        ismoving = false;
         auto cmdvel_callback = [this](const geometry_msgs::msg::Twist::SharedPtr msg)
         {
             if (msg->linear.x == 0 && msg->angular.z == 0)
-            {
-                std::cout << "robot is not moving\n";
-            }
+                ismoving = false;
             else
-            {
-                std::cout << "robot is moving\n";
-            }
+                ismoving = true;
         };
 
         // publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
         subscription_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", best_effort.reliability(be), cmdvel_callback);
+
+        timer_ = this->create_wall_timer(
+            100ms, [this]()
+            { std::cout << ismoving << "\n"; });
     };
 
-    // timer_ = this->create_wall_timer(
-    //     10ms, [this]()
-    //     {
-    //         rclcpp::Time current_time = this->get_clock()->now();
-
-    //         odom_message.header.stamp = current_time;
-    //         transformStamped.header.stamp = current_time;
-
-    //         transformStamped.header.frame_id = "odom";
-    //         transformStamped.child_frame_id = "base_footprint";
-
-    //         odom_message.header.frame_id = "odom";
-    //         odom_message.child_frame_id = "base_footprint";
-
-    //         publisher_->publish(odom_message);
-    //         tbr->sendTransform(transformStamped); });
-
 private:
-    geometry_msgs::msg::TransformStamped transformStamped;
+    // geometry_msgs::msg::TransformStamped transformStamped;
+    bool ismoving;
 
     // rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr publisher_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
+
     rclcpp::QoS best_effort;
     // std::shared_ptr<tf2_ros::TransformBroadcaster> tbr;
     rclcpp::TimerBase::SharedPtr timer_;
