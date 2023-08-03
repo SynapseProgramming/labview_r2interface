@@ -36,7 +36,7 @@ public:
     // ry variance
     cov[28] = 1e5;
     // rz variance
-    cov[35] = 10.0;
+    cov[35] = 40.0;
 
     odom_message.pose.covariance = cov;
     odom_message.twist.covariance = cov;
