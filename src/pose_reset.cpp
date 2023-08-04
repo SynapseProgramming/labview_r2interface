@@ -47,44 +47,43 @@ public:
             {
                 std::cout << ismoving << "\n";
                 if (ismoving)
-                {   fired = false;
+                {
+                    fired = false;
                     this->one_off_timer->cancel();
-                }else {
-                    if(fired==false){
+                }
+                else if (fired == false)
+                {
                     this->one_off_timer->reset();
-                    fired= true;
-                    }
+                    // get the robots current position in space
+                    try {
+                        transformStamped = tf_buffer_->lookupTransform(
+                            toFrameRel, fromFrameRel,
+                            tf2::TimePointZero);
+                        } catch (const tf2::TransformException & ex) {
+                        RCLCPP_INFO(
+                            this->get_logger(), "Could not transform %s to %s: %s",
+                            toFrameRel.c_str(), fromFrameRel.c_str(), ex.what());
+                        return;
+                        }
+                    std::cout<<"POSE SAVED\n";
+                    fired = true;
                 } });
 
         one_off_timer = this->create_wall_timer(1s, [this]()
                                                 {
-      printf("in one_off_timer callback\n");
+                    printf("in one_off_timer callback\n");
 
-      // get the robots current position in space
-      try {
-          transformStamped = tf_buffer_->lookupTransform(
-            toFrameRel, fromFrameRel,
-            tf2::TimePointZero);
-        } catch (const tf2::TransformException & ex) {
-          RCLCPP_INFO(
-            this->get_logger(), "Could not transform %s to %s: %s",
-            toFrameRel.c_str(), fromFrameRel.c_str(), ex.what());
-          return;
-        }
-        std::cout<<transformStamped.transform.translation.x<<"\n";
-        std::cout<<transformStamped.transform.translation.y<<"\n";
+                    std::cout << transformStamped.transform.translation.x << "\n";
+                    std::cout << transformStamped.transform.translation.y << "\n";
 
-        geometry_msgs::msg::PoseWithCovarianceStamped amci;
-        // fill up header here
-        
-        amci.pose.pose.position.x = transformStamped.transform.translation.x;
-        amci.pose.pose.position.y = transformStamped.transform.translation.y;
-        amci.pose.pose.orientation = transformStamped.transform.rotation;
+                    geometry_msgs::msg::PoseWithCovarianceStamped amci;
+                    // fill up header here
 
-        
+                    amci.pose.pose.position.x = transformStamped.transform.translation.x;
+                    amci.pose.pose.position.y = transformStamped.transform.translation.y;
+                    amci.pose.pose.orientation = transformStamped.transform.rotation;
 
-
-      this->one_off_timer->reset(); });
+                    this->one_off_timer->reset(); });
         // cancel to prevent running at the start
         one_off_timer->cancel();
     };
