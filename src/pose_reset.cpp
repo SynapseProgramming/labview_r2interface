@@ -43,7 +43,7 @@ public:
         odomsub_ = this->create_subscription<nav_msgs::msg::Odometry>("odom", best_effort.reliability(be), odom_callback);
 
         timer_ = this->create_wall_timer(
-            100ms, [this]()
+            10ms, [this]()
             {
                 std::cout << ismoving << "\n";
                 if (ismoving)
@@ -60,23 +60,22 @@ public:
                     fired = true;
                 } });
 
-        one_off_timer = this->create_wall_timer(1s, [this]()
+        one_off_timer = this->create_wall_timer(60s, [this]()
                                                 {
                     printf("in one_off_timer callback\n");
 
                     std::cout<<"bot pose: "<<latchedOdom.pose.pose.position.x<<"\n";
 
-                    // std::cout << transformStamped.transform.translation.x << "\n";
-                    // std::cout << transformStamped.transform.translation.y << "\n";
 
-                    // geometry_msgs::msg::PoseWithCovarianceStamped amci;
-                    // amci.header.frame_id= "odom";
-                    // amci.header.stamp = this->get_clock()->now();
+                    geometry_msgs::msg::PoseWithCovarianceStamped amci;
+                    amci.header.frame_id= "odom";
+                    amci.header.stamp = this->get_clock()->now();
+                    amci.pose = latchedOdom.pose;
 
                     // amci.pose.pose.position.x = transformStamped.transform.translation.x;
                     // amci.pose.pose.position.y = transformStamped.transform.translation.y;
                     // amci.pose.pose.orientation = transformStamped.transform.rotation;
-                    // publisher_->publish(amci);
+                    publisher_->publish(amci);
 
                     this->one_off_timer->reset(); });
         // cancel to prevent running at the start
