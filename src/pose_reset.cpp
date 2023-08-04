@@ -11,9 +11,6 @@
 
 #include "nav_msgs/msg/odometry.hpp"
 
-#include "tf2_ros/transform_listener.h"
-#include "tf2_ros/buffer.h"
-
 #define be RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
 using namespace std::chrono_literals;
 
@@ -25,11 +22,6 @@ public:
           best_effort(rclcpp::KeepLast(10))
     {
         RCLCPP_INFO(this->get_logger(), "pose_reset started!\n");
-
-        tf_buffer_ =
-            std::make_unique<tf2_ros::Buffer>(this->get_clock());
-        tf_listener_ =
-            std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
         ismoving = false;
         fired = false;
@@ -62,19 +54,6 @@ public:
                 else if (fired == false)
                 {
                     this->one_off_timer->reset();
-                    // get the robots current position in space
-                    // try {
-                    //     transformStamped = tf_buffer_->lookupTransform(
-                    //         toFrameRel, fromFrameRel,
-                    //         tf2::TimePointZero);
-                    //     } catch (const tf2::TransformException & ex) {
-                    //     RCLCPP_INFO(
-                    //         this->get_logger(), "Could not transform %s to %s: %s",
-                    //         toFrameRel.c_str(), fromFrameRel.c_str(), ex.what());
-                    //     return;
-                    //     }
-                    // std::cout<<"POSE SAVED\n";
-
                     //   only call timer when there is odom data
                     if(initOdom.pose.pose.position.x==0) return;
                     latchedOdom = initOdom;
@@ -105,7 +84,6 @@ public:
     };
 
 private:
-    geometry_msgs::msg::TransformStamped transformStamped;
     bool ismoving, fired;
 
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr publisher_;
@@ -119,8 +97,6 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::TimerBase::SharedPtr one_off_timer;
 
-    std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-    std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
     nav_msgs::msg::Odometry initOdom;
     nav_msgs::msg::Odometry latchedOdom;
 };
