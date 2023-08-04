@@ -45,7 +45,6 @@ public:
         timer_ = this->create_wall_timer(
             10ms, [this]()
             {
-                std::cout << ismoving << "\n";
                 if (ismoving)
                 {
                     fired = false;
@@ -62,19 +61,11 @@ public:
 
         one_off_timer = this->create_wall_timer(60s, [this]()
                                                 {
-                    printf("in one_off_timer callback\n");
-
-                    std::cout<<"bot pose: "<<latchedOdom.pose.pose.position.x<<"\n";
-
-
                     geometry_msgs::msg::PoseWithCovarianceStamped amci;
                     amci.header.frame_id= "odom";
                     amci.header.stamp = this->get_clock()->now();
                     amci.pose = latchedOdom.pose;
 
-                    // amci.pose.pose.position.x = transformStamped.transform.translation.x;
-                    // amci.pose.pose.position.y = transformStamped.transform.translation.y;
-                    // amci.pose.pose.orientation = transformStamped.transform.rotation;
                     publisher_->publish(amci);
 
                     this->one_off_timer->reset(); });
@@ -88,9 +79,6 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr publisher_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odomsub_;
-
-    std::string toFrameRel = "base_footprint";
-    std::string fromFrameRel = "odom";
 
     rclcpp::QoS best_effort;
     rclcpp::TimerBase::SharedPtr timer_;
