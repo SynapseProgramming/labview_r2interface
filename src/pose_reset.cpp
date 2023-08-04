@@ -73,7 +73,7 @@ public:
                     fired = true;
                 } });
 
-        one_off_timer = this->create_wall_timer(30s, [this]()
+        one_off_timer = this->create_wall_timer(600s, [this]()
                                                 {
                     geometry_msgs::msg::PoseWithCovarianceStamped amci;
                     amci.header.frame_id= "odom";
