@@ -29,6 +29,12 @@ def generate_launch_description():
         name="imu_cov",
     )
 
+    pose_reset = Node(
+        package="labview_r2interface",
+        executable="pose_reset",
+        name="pose_reset",
+    )
+
     # max_range:  only datapoints with distances smaller
     # than this range are taken into account (m)
 
@@ -53,4 +59,5 @@ def generate_launch_description():
     ld.add_action(lidar_launch)
     ld.add_action(imu_converter)
     ld.add_action(laser_converter)
+    ld.add_action(pose_reset)
     return ld
