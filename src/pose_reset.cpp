@@ -18,13 +18,27 @@ class pose_reset : public rclcpp::Node
 {
 public:
     pose_reset()
-        : Node("pose_reset"),
+        : Node("pose_reset_new"),
           best_effort(rclcpp::KeepLast(10))
     {
         RCLCPP_INFO(this->get_logger(), "pose_reset started!\n");
 
         ismoving = false;
         fired = false;
+
+        // define covariance matrix
+        // x variance
+        cov[0] = 1e-9;
+        // y variance
+        cov[7] = 1e-9;
+        // z variance
+        cov[14] = 1e-9;
+        // rx variance
+        cov[21] = 1e-9;
+        // ry variance
+        cov[28] = 1e-9;
+        // rz variance
+        cov[35] = 1e-9;
         auto cmdvel_callback = [this](const geometry_msgs::msg::Twist::SharedPtr msg)
         {
             if (msg->linear.x == 0 && msg->angular.z == 0)
@@ -59,12 +73,13 @@ public:
                     fired = true;
                 } });
 
-        one_off_timer = this->create_wall_timer(60s, [this]()
+        one_off_timer = this->create_wall_timer(1s, [this]()
                                                 {
                     geometry_msgs::msg::PoseWithCovarianceStamped amci;
                     amci.header.frame_id= "odom";
                     amci.header.stamp = this->get_clock()->now();
                     amci.pose = latchedOdom.pose;
+                    amci.pose.covariance = cov;
 
                     publisher_->publish(amci);
 
@@ -86,6 +101,8 @@ private:
 
     nav_msgs::msg::Odometry initOdom;
     nav_msgs::msg::Odometry latchedOdom;
+
+    std::array<double, 36> cov;
 };
 
 int main(int argc, char *argv[])
