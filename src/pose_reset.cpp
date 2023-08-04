@@ -7,6 +7,7 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <geometry_msgs/msg/quaternion.h>
 
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
@@ -38,7 +39,7 @@ public:
                 ismoving = true;
         };
 
-        // publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
+        publisher_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 10);
         subscription_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", best_effort.reliability(be), cmdvel_callback);
 
         timer_ = this->create_wall_timer(
@@ -72,7 +73,15 @@ public:
         }
         std::cout<<transformStamped.transform.translation.x<<"\n";
         std::cout<<transformStamped.transform.translation.y<<"\n";
-      
+
+        geometry_msgs::msg::PoseWithCovarianceStamped amci;
+        // fill up header here
+        
+        amci.pose.pose.position.x = transformStamped.transform.translation.x;
+        amci.pose.pose.position.y = transformStamped.transform.translation.y;
+        amci.pose.pose.orientation = transformStamped.transform.rotation;
+
+        
 
 
       this->one_off_timer->reset(); });
@@ -84,7 +93,7 @@ private:
     geometry_msgs::msg::TransformStamped transformStamped;
     bool ismoving, fired;
 
-    // rclcpp::Publisher<>::SharedPtr publisher_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr publisher_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
 
     std::string toFrameRel = "base_footprint";
