@@ -54,6 +54,10 @@ add_executable(imu_cov src/imu_cov.cpp)
 ament_target_dependencies(imu_cov rclcpp nav_msgs sensor_msgs)
 target_link_libraries(imu_cov "${cpp_typesupport_target}")
 
+add_executable(pose_reset src/pose_reset.cpp)
+ament_target_dependencies(pose_reset rclcpp nav_msgs geometry_msgs tf2 tf2_ros)
+target_link_libraries(pose_reset "${cpp_typesupport_target}")
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -73,6 +77,7 @@ install(
   TARGETS
   odom_convert
   imu_cov
+  pose_reset
   unfiltered_odom_convert
   laser_filter
   DESTINATION lib/${PROJECT_NAME})
