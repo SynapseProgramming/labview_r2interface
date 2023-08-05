@@ -114,14 +114,11 @@ private:
     std::string fromFrameRel = "map";
 
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr publisher_;
-    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odomsub_;
 
     rclcpp::QoS best_effort;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::TimerBase::SharedPtr one_off_timer;
-
-    nav_msgs::msg::Odometry latchedOdom;
 
     std::array<double, 36> cov;
 };
