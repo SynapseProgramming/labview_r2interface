@@ -85,7 +85,7 @@ public:
                     fired = true;
                 } });
 
-        one_off_timer = this->create_wall_timer(1s, [this]()
+        one_off_timer = this->create_wall_timer(60s, [this]()
                                                 {
                                                     geometry_msgs::msg::PoseWithCovarianceStamped amci;
                                                     amci.header.frame_id = "map";
