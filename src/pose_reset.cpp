@@ -2,7 +2,10 @@
 #include <memory>
 #include "rclcpp/rclcpp.hpp"
 #include <iostream>
+
 #include <tf2/LinearMath/Quaternion.h>
+#include "tf2_ros/transform_listener.h"
+#include "tf2_ros/buffer.h"
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -54,9 +57,13 @@ public:
 
         publisher_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/set_pose", 10);
         odomsub_ = this->create_subscription<nav_msgs::msg::Odometry>("odom", best_effort.reliability(be), odom_callback);
+        tf_buffer_ =
+            std::make_unique<tf2_ros::Buffer>(this->get_clock());
+        tf_listener_ =
+            std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
         timer_ = this->create_wall_timer(
-            10ms, [this]()
+            100ms, [this]()
             {
                 if (ismoving)
                 {
@@ -66,7 +73,23 @@ public:
                 else if (fired == false)
                 {
                     this->one_off_timer->reset();
-                    fired = true;
+                    // get the robots current position in space
+                    try {
+                        transformStamped = tf_buffer_->lookupTransform(
+                            fromFrameRel,toFrameRel,
+                            tf2::TimePointZero,100ms);
+                        } catch (const tf2::TransformException & ex) {
+                        RCLCPP_INFO(
+                            this->get_logger(), "Could not transform %s to %s: %s",
+                            toFrameRel.c_str(), fromFrameRel.c_str(), ex.what());
+                        return;
+                        }
+                    std::cout<<"POSE SAVED\n";
+                    std::cout << transformStamped.transform.translation.x << "\n";
+                    std::cout << transformStamped.transform.translation.y << "\n";
+
+
+                    // fired = true;
                 } });
 
         one_off_timer = this->create_wall_timer(600s, [this]()
@@ -85,6 +108,13 @@ public:
 
 private:
     bool ismoving, fired;
+    geometry_msgs::msg::TransformStamped transformStamped;
+
+    std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
+
+    std::string toFrameRel = "base_footprint";
+    std::string fromFrameRel = "map";
 
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr publisher_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
