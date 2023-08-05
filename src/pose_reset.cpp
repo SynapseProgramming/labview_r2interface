@@ -2,7 +2,10 @@
 #include <memory>
 #include "rclcpp/rclcpp.hpp"
 #include <iostream>
+
 #include <tf2/LinearMath/Quaternion.h>
+#include "tf2_ros/transform_listener.h"
+#include "tf2_ros/buffer.h"
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -18,7 +21,7 @@ class pose_reset : public rclcpp::Node
 {
 public:
     pose_reset()
-        : Node("pose_reset_new"),
+        : Node("pose_reset"),
           best_effort(rclcpp::KeepLast(10))
     {
         RCLCPP_INFO(this->get_logger(), "pose_reset started!\n");
@@ -28,36 +31,37 @@ public:
 
         // define covariance matrix
         // x variance
-        cov[0] = 1e-9;
+        cov[0] = 0.25;
         // y variance
-        cov[7] = 1e-9;
+        cov[7] = 0.25;
         // z variance
-        cov[14] = 1e-9;
+        cov[14] = 0.0;
         // rx variance
-        cov[21] = 1e-9;
+        cov[21] = 0.0;
         // ry variance
-        cov[28] = 1e-9;
+        cov[28] = 0.0;
         // rz variance
-        cov[35] = 1e-9;
-        auto cmdvel_callback = [this](const geometry_msgs::msg::Twist::SharedPtr msg)
+        cov[35] = 0.06853891909122467;
+
+        auto odom_callback = [this](const nav_msgs::msg::Odometry::SharedPtr msg)
         {
-            if (msg->linear.x == 0 && msg->angular.z == 0)
+            double linearv = msg->twist.twist.linear.x;
+            double angularv = msg->twist.twist.angular.z;
+            if (abs(angularv) <= 0.01 && abs(linearv) <= 0.01)
                 ismoving = false;
             else
                 ismoving = true;
         };
 
-        auto odom_callback = [this](const nav_msgs::msg::Odometry::SharedPtr msg)
-        {
-            this->initOdom = *msg;
-        };
-
-        publisher_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/set_pose", 10);
-        subscription_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", best_effort.reliability(be), cmdvel_callback);
+        publisher_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 10);
         odomsub_ = this->create_subscription<nav_msgs::msg::Odometry>("odom", best_effort.reliability(be), odom_callback);
+        tf_buffer_ =
+            std::make_unique<tf2_ros::Buffer>(this->get_clock());
+        tf_listener_ =
+            std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
         timer_ = this->create_wall_timer(
-            10ms, [this]()
+            100ms, [this]()
             {
                 if (ismoving)
                 {
@@ -67,39 +71,54 @@ public:
                 else if (fired == false)
                 {
                     this->one_off_timer->reset();
-                    //   only call timer when there is odom data
-                    if(initOdom.pose.pose.position.x==0) return;
-                    latchedOdom = initOdom;
+                    // get the robots current position in space
+                    try {
+                        transformStamped = tf_buffer_->lookupTransform(
+                            fromFrameRel,toFrameRel,
+                            tf2::TimePointZero,100ms);
+                        } catch (const tf2::TransformException & ex) {
+                        RCLCPP_INFO(
+                            this->get_logger(), "Could not transform %s to %s: %s",
+                            toFrameRel.c_str(), fromFrameRel.c_str(), ex.what());
+                        return;
+                        }
                     fired = true;
                 } });
 
-        one_off_timer = this->create_wall_timer(600s, [this]()
+        one_off_timer = this->create_wall_timer(60s, [this]()
                                                 {
-                    geometry_msgs::msg::PoseWithCovarianceStamped amci;
-                    amci.header.frame_id= "odom";
-                    amci.header.stamp = this->get_clock()->now();
-                    amci.pose = latchedOdom.pose;
+                                                    geometry_msgs::msg::PoseWithCovarianceStamped amci;
+                                                    amci.header.frame_id = "map";
+                                                    amci.header.stamp = this->get_clock()->now();
 
-                    publisher_->publish(amci);
+                                                    amci.pose.pose.position.x = transformStamped.transform.translation.x;
+                                                    amci.pose.pose.position.y = transformStamped.transform.translation.y;
+                                                    amci.pose.pose.orientation = transformStamped.transform.rotation;
+                                                    amci.pose.covariance = cov;
 
-                    this->one_off_timer->reset(); });
+                                                    publisher_->publish(amci);
+
+                                                    this->one_off_timer->reset(); });
         // cancel to prevent running at the start
         one_off_timer->cancel();
     };
 
 private:
     bool ismoving, fired;
+    geometry_msgs::msg::TransformStamped transformStamped;
+
+    std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
+
+    std::string toFrameRel = "base_footprint";
+    std::string fromFrameRel = "map";
 
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr publisher_;
-    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odomsub_;
 
     rclcpp::QoS best_effort;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::TimerBase::SharedPtr one_off_timer;
-
-    nav_msgs::msg::Odometry initOdom;
-    nav_msgs::msg::Odometry latchedOdom;
 
     std::array<double, 36> cov;
 };
