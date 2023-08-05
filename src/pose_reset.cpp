@@ -31,31 +31,29 @@ public:
 
         // define covariance matrix
         // x variance
-        cov[0] = 1e-9;
+        cov[0] = 0.25;
         // y variance
-        cov[7] = 1e-9;
+        cov[7] = 0.25;
         // z variance
-        cov[14] = 1e-9;
+        cov[14] = 0.0;
         // rx variance
-        cov[21] = 1e-9;
+        cov[21] = 0.0;
         // ry variance
-        cov[28] = 1e-9;
+        cov[28] = 0.0;
         // rz variance
-        cov[35] = 1e-9;
+        cov[35] = 0.06853891909122467;
 
         auto odom_callback = [this](const nav_msgs::msg::Odometry::SharedPtr msg)
         {
             double linearv = msg->twist.twist.linear.x;
             double angularv = msg->twist.twist.angular.z;
-            if (abs(angularv) <= 0.01 && abs(linearv) < 0.01)
+            if (abs(angularv) <= 0.01 && abs(linearv) <= 0.01)
                 ismoving = false;
             else
                 ismoving = true;
-
-            std::cout << ismoving << "\n";
         };
 
-        publisher_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/set_pose", 10);
+        publisher_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 10);
         odomsub_ = this->create_subscription<nav_msgs::msg::Odometry>("odom", best_effort.reliability(be), odom_callback);
         tf_buffer_ =
             std::make_unique<tf2_ros::Buffer>(this->get_clock());
@@ -84,22 +82,21 @@ public:
                             toFrameRel.c_str(), fromFrameRel.c_str(), ex.what());
                         return;
                         }
-                    std::cout<<"POSE SAVED\n";
-                    std::cout << transformStamped.transform.translation.x << "\n";
-                    std::cout << transformStamped.transform.translation.y << "\n";
-
-
-                    // fired = true;
+                    fired = true;
                 } });
 
-        one_off_timer = this->create_wall_timer(600s, [this]()
+        one_off_timer = this->create_wall_timer(1s, [this]()
                                                 {
-                                                    // geometry_msgs::msg::PoseWithCovarianceStamped amci;
-                                                    // amci.header.frame_id= "odom";
-                                                    // amci.header.stamp = this->get_clock()->now();
-                                                    // amci.pose = latchedOdom.pose;
+                                                    geometry_msgs::msg::PoseWithCovarianceStamped amci;
+                                                    amci.header.frame_id = "map";
+                                                    amci.header.stamp = this->get_clock()->now();
 
-                                                    // publisher_->publish(amci);
+                                                    amci.pose.pose.position.x = transformStamped.transform.translation.x;
+                                                    amci.pose.pose.position.y = transformStamped.transform.translation.y;
+                                                    amci.pose.pose.orientation = transformStamped.transform.rotation;
+                                                    amci.pose.covariance = cov;
+
+                                                    publisher_->publish(amci);
 
                                                     this->one_off_timer->reset(); });
         // cancel to prevent running at the start
