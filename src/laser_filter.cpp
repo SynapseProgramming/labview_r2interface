@@ -60,6 +60,17 @@ public:
                 }
             }
 
+             // set small values to nan
+             for (size_t idx = 0; idx < filtered_laserscan_message.ranges.size(); ++idx){
+             
+             	if(filtered_laserscan_message.ranges[idx]<=0.01){
+             		filtered_laserscan_message.ranges[idx] = std::numeric_limits<float>::quiet_NaN();
+             	}
+             
+             }
+            
+
+            
             // set invalid points to nan
 
             for (size_t idx = 0; idx < valid_ranges.size(); ++idx)
